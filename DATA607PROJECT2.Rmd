@@ -1,0 +1,112 @@
+---
+title: "Data 607 Project 2"
+author: "Wiktoria Gnojek"
+date: "10/2/2021"
+output: html_document
+---
+Project 2
+
+Libraries
+```{r}
+library(dplyr)
+library(tidyr)
+```
+The first data set chosen was posted by Charles Ugiagbe and focused on NYC Gifted & Talented Scores.
+
+The initial data can be found here; https://makingnoiseandhearingthings.com/2018/04/19/datasets-for-data-cleaning-practice/
+
+I also took the data, and created a CSV file which I imported to GitHub; https://github.com/WiktoriaGnojek/Data_607_Project_2/blob/main/NYC%20Gifted%20%26%20Talented%20Scores%20.csv
+
+Beginning by importing the CSV data, we will focus on Charles's questions which include analyzing how each student ranks using the total score, and analyzing the student scores by birth month.
+```{r}
+scores <- read.csv("https://raw.githubusercontent.com/WiktoriaGnojek/Data_607_Project_2/main/NYC%20Gifted%20%26%20Talented%20Scores%20.csv")
+head(scores)
+```
+We will begin by analyzing how the students rank per total score. Since we do not have specific names we will insert an additional column that assigns specific Id's. 
+```{r}
+scores <- mutate(scores,
+       Student.Id = 1:17)
+head(scores)
+```
+We can now begin to rank
+```{r}
+# high to low scores
+scores %>%
+  select(Student.Id, Overall.Score, Entering.Grade.Level) %>%
+  arrange(desc(Overall.Score)) 
+```
+Group by grade level and summarise the mean 
+```{r}
+scores %>%
+  group_by(Entering.Grade.Level) %>%
+  summarise(
+    mean(Overall.Score)
+  )
+```
+Student scores by month 
+```{r}
+month_scores <- scores %>%
+  select(Student.Id, Birth.Month, Overall.Score) %>%
+  group_by(Birth.Month) %>%
+  summarise(
+    mean(Overall.Score)
+  )
+month_scores
+```
+The second analysis was provided by Catherine Cho and focuses on Income and Religion data from; https://www.pewforum.org/religious-landscape-study/income-distribution/
+
+The data shows income distribution by religious group per % of adults who have a household income of a certain range.
+
+My GitHub file; https://github.com/WiktoriaGnojek/Data_607_Project_2/blob/main/Income_By_Religion.csv
+
+```{r}
+income <- read.csv("https://raw.githubusercontent.com/WiktoriaGnojek/Data_607_Project_2/main/Income_By_Religion.csv")
+head(income)
+```
+We can compare highest earners and lowest earners 
+```{r}
+given_df <- income %>%
+  select(Religious.tradition, Less.than..30.000, X.100.000.or.more) %>%
+  arrange(desc(Less.than..30.000))
+given_df
+```
+Can we see a relationship between the highest and lowest earners? 
+
+The religion that is most likely to earn over $100,000 is also the least likely to earn below $30,000. 
+
+We also need to consider sample size as it can skew data. 
+
+Final Data was provided by Chinedu Onyeka, and focuses on latest Covid-19 India Status. 
+
+The original data can be found here; https://www.kaggle.com/anandhuh/latest-covid19-india-statewise-data/version/17
+
+I've eliminated some sections so that I can perform ratios on my own using mutate, the CSV file I will be using can be found under this GitHub link; https://github.com/WiktoriaGnojek/Data_607_Project_2/blob/main/Latest%20Covid-19%20India%20Status.csv
+```{r}
+covid <- read.csv("https://raw.githubusercontent.com/WiktoriaGnojek/Data_607_Project_2/main/Latest%20Covid-19%20India%20Status.csv")
+head(covid)
+```
+Create Ratios of Deaths to Total Cases
+
+Does Covid death ratio depend on state or is it uniform for all states? 
+I would say that the death ratio depends on the area as well as total case count. The results could be skewed due to total cases being different per state. The top state with highest death ratios are Punjab, Uttarakhand, Nagaland and Maharashtra. 
+```{r}
+covid %>%
+  select(State.UTs, Total.Cases, Deaths) %>%
+  mutate(
+    Death_Ratio = Deaths/Total.Cases*100
+  ) %>%
+  arrange(desc(Death_Ratio)) %>%
+  #filter the highest death ratio
+  filter(Death_Ratio >= 2)
+```
+Create Ratios of Total Cases and Discharges 
+```{r}
+covid %>%
+  select(State.UTs, Total.Cases, Discharged) %>%
+  mutate(
+    Discharge_Ratio = Discharged/Total.Cases * 100
+  ) %>%
+  arrange(desc(Discharge_Ratio)) %>%
+  # highest discharge rates 
+  filter(Discharge_Ratio >= 98)
+```
